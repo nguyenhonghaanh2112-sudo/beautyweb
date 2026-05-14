@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Confirm Your Review — GlowShop{% endblock %}
+
+{% block extra_css %}
+.confirm-container {
+  max-width: 700px; margin: 3rem auto;
+  background: white; border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.confirm-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; margin-bottom: .3rem;
+}
+.review-preview {
+  background: var(--cream); border-radius: 10px;
+  padding: 1.2rem; margin: 1.2rem 0;
+  border-left: 4px solid var(--rose);
+}
+.ml-box {
+  border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0;
+  border: 2px solid var(--rose-lt);
+}
+.ml-box h5 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; margin-bottom: .8rem;
+}
+.confidence-bar {
+  height: 10px; border-radius: 5px;
+  background: #eee; overflow: hidden; margin-top: .5rem;
+}
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--rose), var(--gold));
+  border-radius: 5px;
+}
+.toggle-label {
+  display: flex; align-items: center; gap: 1rem;
+  cursor: pointer; padding: .8rem 1rem; border-radius: 10px;
+  border: 2px solid #eee; margin-top: .5rem; transition: all .2s;
+}
+.toggle-label:hover { border-color: var(--rose); }
+.toggle-label input[type="radio"] { accent-color: var(--rose); width: 18px; height: 18px; }
+.toggle-label.selected { border-color: var(--rose); background: #fff5f3; }
+{% endblock %}
+
+{% block content %}
+<div class="container px-3">
+<div class="confirm-container">
+
+  <a href="{{ url_for('add_review', pid=product.id) }}"
+     style="color:var(--rose);text-decoration:none;font-size:.9rem">
+    <i class="bi bi-arrow-left me-1"></i> Edit Review
+  </a>
+
+  <h2 class="confirm-title mt-3">Preview Your Review</h2>
+  <p class="text-muted">Our AI has analysed your review. Check the prediction below before confirming.</p>
+
+  <!-- Review preview -->
+  <div class="review-preview">
+    <div class="d-flex justify-content-between mb-1">
+      <strong>{{ title }}</strong>
+      <span class="stars">
+        {% for i in range(rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+        {% for i in range(5 - rating) %}<i class="bi bi-star"></i>{% endfor %}
+      </span>
+    </div>
+    <p class="mb-0 text-muted" style="font-size:.95rem">{{ text }}</p>
+  </div>
+
+  <!-- ML Prediction -->
+  <div class="ml-box">
+    <h5><i class="bi bi-robot" style="color:var(--rose)"></i> AI Recommendation Prediction</h5>
+    <p class="mb-2" style="font-size:.9rem;color:var(--muted)">
+      Based on your review text and rating, our model predicts:
+    </p>
+    {% if label == 1 %}
+      <span class="badge-recommend" style="font-size:.95rem;padding:.4rem 1rem">
+        👍 Would Recommend this product
+      </span>
+    {% else %}
+      <span class="badge-not-recommend" style="font-size:.95rem;padding:.4rem 1rem">
+        👎 Would NOT Recommend this product
+      </span>
+    {% endif %}
+
+    <div class="mt-3" style="font-size:.85rem;color:var(--muted)">
+      Model confidence: <strong>{{ (confidence * 100)|round|int }}%</strong>
+    </div>
+    <div class="confidence-bar">
+      <div class="confidence-fill" style="width:{{ (confidence * 100)|round|int }}%"></div>
+    </div>
+    <p class="mt-2 mb-0" style="font-size:.82rem;color:var(--muted)">
+      <i class="bi bi-info-circle me-1"></i> Not what you think? Override below.
+    </p>
+  </div>
+
+  <!-- Confirm form with override -->
+  <form method="POST" action="{{ url_for('confirm_review', pid=product.id) }}">
+    <input type="hidden" name="title"          value="{{ title }}">
+    <input type="hidden" name="text"           value="{{ text }}">
+    <input type="hidden" name="rating"         value="{{ rating }}">
+    <input type="hidden" name="original_label" value="{{ label }}">
+
+    <p class="mb-2"><strong>Final Recommendation Label:</strong></p>
+
+    <label class="toggle-label {% if label == 1 %}selected{% endif %}" id="label-yes">
+      <input type="radio" name="final_label" value="1"
+             {% if label == 1 %}checked{% endif %} onchange="updateToggle()">
+      <span style="font-size:1.4rem">👍</span>
+      <div>
+        <div class="fw-500">I recommend this product</div>
+        <div style="font-size:.8rem;color:var(--muted)">Others should buy this</div>
+      </div>
+    </label>
+
+    <label class="toggle-label {% if label == 0 %}selected{% endif %}" id="label-no">
+      <input type="radio" name="final_label" value="0"
+             {% if label == 0 %}checked{% endif %} onchange="updateToggle()">
+      <span style="font-size:1.4rem">👎</span>
+      <div>
+        <div class="fw-500">I do NOT recommend this product</div>
+        <div style="font-size:.8rem;color:var(--muted)">Others should reconsider</div>
+      </div>
+    </label>
+
+    <button type="submit" class="btn-rose w-100 mt-4" style="padding:.75rem;font-size:1rem">
+      <i class="bi bi-check-circle me-2"></i> Confirm & Publish Review
+    </button>
+  </form>
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateToggle() {
+  const yes = document.querySelector('input[value="1"]');
+  const no  = document.querySelector('input[value="0"]');
+  document.getElementById('label-yes').classList.toggle('selected', yes.checked);
+  document.getElementById('label-no').classList.toggle('selected', no.checked);
+}
+</script>
+{% endblock %}

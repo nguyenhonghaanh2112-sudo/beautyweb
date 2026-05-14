@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}GlowShop{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --cream:   #faf7f2;
+      --rose:    #c8705a;
+      --rose-lt: #f0d6cf;
+      --brown:   #3b2a2a;
+      --gold:    #c9a96e;
+      --muted:   #8a7a72;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--brown);
+      min-height: 100vh;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: var(--brown) !important;
+      padding: 1rem 2rem;
+      position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    }
+    .navbar-brand {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      color: var(--cream) !important;
+      letter-spacing: 1px;
+    }
+    .navbar-brand span { color: var(--gold); }
+    .nav-link { color: rgba(255,255,255,0.8) !important; font-weight: 300; transition: color .2s; }
+    .nav-link:hover { color: var(--gold) !important; }
+
+    /* Search bar in navbar */
+    .navbar .search-form { display: flex; gap: .5rem; }
+    .navbar .search-form input {
+      border: none; border-radius: 20px;
+      padding: .4rem 1rem; font-size: .9rem;
+      background: rgba(255,255,255,0.12);
+      color: white; width: 220px;
+      transition: background .2s;
+    }
+    .navbar .search-form input::placeholder { color: rgba(255,255,255,0.5); }
+    .navbar .search-form input:focus {
+      outline: none;
+      background: rgba(255,255,255,0.2);
+    }
+    .navbar .search-form button {
+      background: var(--rose); border: none;
+      border-radius: 20px; padding: .4rem 1rem;
+      color: white; cursor: pointer; transition: background .2s;
+    }
+    .navbar .search-form button:hover { background: #b5604a; }
+
+    /* ── Buttons ── */
+    .btn-rose {
+      background: var(--rose); color: white;
+      border: none; border-radius: 6px;
+      padding: .5rem 1.4rem; font-weight: 500;
+      transition: all .2s; cursor: pointer;
+    }
+    .btn-rose:hover { background: #b5604a; color: white; transform: translateY(-1px); }
+
+    .btn-outline-rose {
+      background: transparent;
+      color: var(--rose);
+      border: 1.5px solid var(--rose);
+      border-radius: 6px;
+      padding: .45rem 1.2rem; font-weight: 500;
+      transition: all .2s; cursor: pointer;
+    }
+    .btn-outline-rose:hover {
+      background: var(--rose); color: white;
+    }
+
+    /* ── Cards ── */
+    .product-card {
+      background: white;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+      transition: transform .25s, box-shadow .25s;
+      height: 100%;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.13);
+      color: inherit;
+    }
+    .product-card img {
+      width: 100%; height: 220px;
+      object-fit: cover;
+    }
+    .product-card .card-body { padding: 1rem 1.1rem 1.2rem; }
+    .product-card .brand {
+      font-size: .75rem; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: .2rem;
+    }
+    .product-card .name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; font-weight: 600;
+      margin-bottom: .4rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .product-card .price {
+      color: var(--rose); font-weight: 600;
+      font-size: 1rem;
+    }
+
+    /* ── Stars ── */
+    .stars { color: var(--gold); font-size: .85rem; }
+
+    /* ── Badge ── */
+    .badge-recommend {
+      background: #d4edda; color: #2d6a4f;
+      padding: .25rem .7rem; border-radius: 20px;
+      font-size: .78rem; font-weight: 500;
+    }
+    .badge-not-recommend {
+      background: #fde8e8; color: #b91c1c;
+      padding: .25rem .7rem; border-radius: 20px;
+      font-size: .78rem; font-weight: 500;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--brown);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 4rem;
+      font-size: .85rem;
+    }
+
+    /* ── Flash messages ── */
+    .alert-floating {
+      position: fixed; top: 80px; right: 20px;
+      z-index: 999; min-width: 280px;
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Glow<span>Shop</span></a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+      </ul>
+
+      <form class="search-form" action="{{ url_for('search') }}" method="get">
+        <input type="text" name="q" placeholder="Search products..." value="{{ request.args.get('q', '') }}">
+        <button type="submit"><i class="bi bi-search"></i></button>
+      </form>
+    </div>
+  </div>
+</nav>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-floating alert-dismissible fade show">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+{% endwith %}
+
+<!-- Main Content -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<footer>
+  <p>&copy; 2025 GlowShop &mdash; Beauty & Cosmetics. Built with Flask &amp; Machine Learning.</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

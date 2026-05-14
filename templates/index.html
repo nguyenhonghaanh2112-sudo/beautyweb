@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}GlowShop — Beauty & Cosmetics{% endblock %}
+
+{% block extra_css %}
+.hero {
+  background: linear-gradient(135deg, var(--brown) 0%, #5c3d3d 100%);
+  color: white;
+  padding: 4rem 2rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c8705a' fill-opacity='0.08'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.5;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem; font-weight: 700;
+  position: relative;
+}
+.hero p { font-size: 1.15rem; opacity: .8; position: relative; margin-top: .5rem; }
+
+.brand-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem; }
+.brand-pill {
+  padding: .35rem 1rem; border-radius: 20px;
+  border: 1.5px solid var(--rose-lt);
+  background: white; color: var(--brown);
+  font-size: .85rem; cursor: pointer;
+  text-decoration: none; transition: all .2s;
+  white-space: nowrap;
+}
+.brand-pill:hover, .brand-pill.active {
+  background: var(--rose); color: white;
+  border-color: var(--rose);
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; margin-bottom: 1.5rem;
+  color: var(--brown);
+}
+.section-title span { border-bottom: 3px solid var(--rose); padding-bottom: 2px; }
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>✨ Discover Your Glow</h1>
+  <p>Explore thousands of beauty products, read real reviews, and find what works for you.</p>
+  <form action="{{ url_for('search') }}" method="get" class="mt-3 d-flex justify-content-center gap-2">
+    <input type="text" name="q" placeholder="Search brands, products..."
+           style="border-radius:25px;border:none;padding:.6rem 1.4rem;width:340px;font-size:1rem;">
+    <button type="submit" class="btn-rose" style="border-radius:25px;padding:.6rem 1.6rem;">
+      <i class="bi bi-search"></i> Search
+    </button>
+  </form>
+</div>
+
+<div class="container-fluid px-4 py-4">
+
+  <!-- Brand filter pills -->
+  {% if brands %}
+  <div class="brand-pills">
+    <a href="{{ url_for('index') }}"
+       class="brand-pill {% if not selected_brand %}active{% endif %}">
+      🛍️ All Brands
+    </a>
+    {% for brand in brands %}
+    <a href="{{ url_for('index', brand=brand) }}"
+       class="brand-pill {% if selected_brand == brand %}active{% endif %}">
+      {{ brand }}
+    </a>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h2 class="section-title">
+    <span>{% if selected_brand %}{{ selected_brand }}{% else %}All Products{% endif %}</span>
+    <small class="text-muted fs-6 ms-2 fw-normal">({{ products|length }} items)</small>
+  </h2>
+
+  {% if products %}
+  <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-3">
+    {% for product in products %}
+    <div class="col">
+      <a href="{{ url_for('product_detail', pid=product.id) }}" class="product-card">
+        <img src="{{ product.image_url or '' }}"
+             alt="{{ product.name }}"
+             onerror="this.src='https://placehold.co/400x300/f0d6cf/c8705a?text=Beauty'">
+        <div class="card-body">
+          <div class="brand">{{ product.brand or 'Unknown Brand' }}</div>
+          <div class="name">{{ product.name }}</div>
+          <div class="d-flex justify-content-between align-items-center mt-2">
+            <span class="stars">
+              {% for i in range(5) %}<i class="bi bi-star-fill" style="font-size:.7rem"></i>{% endfor %}
+            </span>
+            {% if product.reviews %}
+              {% set pos = product.reviews|selectattr('recommend_label','eq',1)|list|length %}
+              {% if pos > 0 %}
+                <span class="badge-recommend" style="font-size:.72rem">👍 {{ pos }}</span>
+              {% endif %}
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="bi bi-search" style="font-size:3rem;color:var(--muted)"></i>
+    <p class="mt-3 text-muted">No products found.</p>
+    <a href="{{ url_for('index') }}" class="btn-rose mt-2 d-inline-block">View All Products</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

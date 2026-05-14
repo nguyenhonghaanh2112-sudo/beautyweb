@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Write a Review — {{ product.name }}{% endblock %}
+
+{% block extra_css %}
+.form-container {
+  max-width: 680px; margin: 3rem auto;
+  background: white; border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.form-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; margin-bottom: .3rem;
+}
+.star-rating { display: flex; flex-direction: row-reverse; gap: .3rem; }
+.star-rating input { display: none; }
+.star-rating label {
+  font-size: 2rem; color: #ddd; cursor: pointer;
+  transition: color .15s;
+}
+.star-rating input:checked ~ label,
+.star-rating label:hover,
+.star-rating label:hover ~ label { color: var(--gold); }
+.form-label { font-weight: 500; color: var(--brown); margin-bottom: .3rem; }
+.form-control {
+  border: 1.5px solid #e8ddd8; border-radius: 8px;
+  padding: .6rem .9rem; transition: border-color .2s;
+  width: 100%; font-size: .95rem;
+}
+.form-control:focus {
+  border-color: var(--rose); outline: none;
+  box-shadow: 0 0 0 3px rgba(200,112,90,0.12);
+}
+{% endblock %}
+
+{% block content %}
+<div class="container px-3">
+<div class="form-container">
+
+  <a href="{{ url_for('product_detail', pid=product.id) }}"
+     style="color:var(--rose);text-decoration:none;font-size:.9rem">
+    <i class="bi bi-arrow-left me-1"></i> Back to {{ product.name[:40] }}
+  </a>
+
+  <h2 class="form-title mt-3">Write a Review</h2>
+  <p class="text-muted mb-4">Share your experience with <strong>{{ product.name }}</strong></p>
+
+  <form method="POST" action="{{ url_for('add_review', pid=product.id) }}">
+
+    <!-- Star rating -->
+    <div class="mb-4">
+      <label class="form-label d-block">Your Rating *</label>
+      <div class="star-rating">
+        {% for i in [5,4,3,2,1] %}
+        <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}"
+               {% if i == 3 %}checked{% endif %}>
+        <label for="star{{ i }}"><i class="bi bi-star-fill"></i></label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="mb-3">
+      <label class="form-label" for="title">Review Title *</label>
+      <input type="text" class="form-control" id="title" name="title"
+             placeholder="Summarise your experience..." required maxlength="200">
+    </div>
+
+    <!-- Review body -->
+    <div class="mb-4">
+      <label class="form-label" for="text">Your Review *</label>
+      <textarea class="form-control" id="text" name="text" rows="5"
+                placeholder="Tell others what you think about this product..."
+                required minlength="20"></textarea>
+      <div class="text-muted mt-1" style="font-size:.8rem">
+        Minimum 20 characters. Our ML model will predict your recommendation label.
+      </div>
+    </div>
+
+    <button type="submit" class="btn-rose w-100" style="padding:.7rem;font-size:1rem">
+      <i class="bi bi-robot me-2"></i> Generate ML Prediction & Preview
+    </button>
+
+  </form>
+</div>
+</div>
+{% endblock %}

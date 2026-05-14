@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — GlowShop{% endblock %}
+
+{% block extra_css %}
+.product-hero {
+  background: white;
+  border-bottom: 1px solid var(--rose-lt);
+  padding: 2rem 0;
+}
+.product-img {
+  width: 100%; max-height: 420px;
+  object-fit: cover; border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.product-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 700;
+}
+.brand-tag {
+  display: inline-block;
+  background: var(--rose-lt); color: var(--rose);
+  padding: .2rem .8rem; border-radius: 20px;
+  font-size: .8rem; font-weight: 600;
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: .8rem;
+}
+.avg-rating-box {
+  background: var(--cream);
+  border-radius: 10px; padding: 1rem;
+  display: inline-flex; align-items: center; gap: .8rem;
+  margin: .8rem 0;
+}
+.avg-rating-num {
+  font-size: 2.5rem; font-weight: 700;
+  font-family: 'Playfair Display', serif;
+  color: var(--rose);
+}
+
+/* Reviews */
+.review-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border-left: 4px solid var(--rose-lt);
+}
+.review-card.positive { border-left-color: #6cc08b; }
+.review-card.negative { border-left-color: #f87171; }
+
+/* Similar products */
+.similar-card {
+  background: white;
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform .2s;
+  text-decoration: none; color: inherit;
+  display: block;
+}
+.similar-card:hover { transform: translateY(-3px); color: inherit; }
+.similar-card img { width: 100%; height: 140px; object-fit: cover; }
+.similar-card .info { padding: .6rem .8rem; }
+.similar-card .s-brand { font-size: .7rem; color: var(--muted); text-transform: uppercase; }
+.similar-card .s-name {
+  font-size: .85rem; font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+{% endblock %}
+
+{% block content %}
+<div class="product-hero">
+  <div class="container py-2">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-3">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="color:var(--rose)">Home</a></li>
+        {% if product.category %}
+        <li class="breadcrumb-item">
+          <a href="{{ url_for('index', category=product.category) }}" style="color:var(--rose)">{{ product.category }}</a>
+        </li>
+        {% endif %}
+        <li class="breadcrumb-item active">{{ product.name[:40] }}...</li>
+      </ol>
+    </nav>
+
+    <div class="row g-4">
+      <!-- Image -->
+      <div class="col-md-4">
+        <img src="{{ product.image_url or '' }}"
+             alt="{{ product.name }}" class="product-img"
+             onerror="this.src='https://placehold.co/500x500/f0d6cf/c8705a?text=Beauty'">
+      </div>
+
+      <!-- Info -->
+      <div class="col-md-8">
+        <div class="brand-tag">{{ product.brand or 'Unknown Brand' }}</div>
+        <h1 class="product-title">{{ product.name }}</h1>
+        <p class="text-muted mt-2" style="line-height:1.7">{{ product.description or 'No description available.' }}</p>
+
+        <!-- Rating -->
+        <div class="avg-rating-box">
+          <div class="avg-rating-num">{{ avg_rating }}</div>
+          <div>
+            <div class="stars">
+              {% for i in range(5) %}
+                {% if i < avg_rating|int %}
+                  <i class="bi bi-star-fill"></i>
+                {% else %}
+                  <i class="bi bi-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <div class="text-muted" style="font-size:.85rem">{{ reviews|length }} review{% if reviews|length != 1 %}s{% endif %}</div>
+          </div>
+        </div>
+
+        <!-- Recommendation stats -->
+        {% if reviews %}
+        {% set pos_count = reviews|selectattr('recommend_label','eq',1)|list|length %}
+        <div class="mt-2">
+          <span class="badge-recommend">👍 {{ pos_count }} recommend</span>
+          <span class="badge-not-recommend ms-2">👎 {{ reviews|length - pos_count }} don't recommend</span>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('add_review', pid=product.id) }}"
+           class="btn-rose mt-3 d-inline-block">
+          <i class="bi bi-pencil-square me-1"></i> Write a Review
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- Reviews section -->
+    <div class="col-lg-8">
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:1.2rem">
+        Customer Reviews
+        <small class="text-muted fs-6 fw-normal ms-2">({{ reviews|length }})</small>
+      </h3>
+
+      {% if reviews %}
+        {% for review in reviews %}
+        <div class="review-card {% if review.recommend_label == 1 %}positive{% else %}negative{% endif %}">
+          <div class="d-flex justify-content-between align-items-start">
+            <div>
+              <strong>{{ review.title or 'Review' }}</strong>
+              {% if review.user_overridden %}
+                <span class="ms-2" style="font-size:.75rem;color:var(--muted)">(label edited by user)</span>
+              {% endif %}
+            </div>
+            <div>
+              {% if review.recommend_label == 1 %}
+                <span class="badge-recommend">👍 Recommends</span>
+              {% else %}
+                <span class="badge-not-recommend">👎 Doesn't Recommend</span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="stars mt-1">
+            {% for i in range(review.rating) %}<i class="bi bi-star-fill"></i>{% endfor %}
+            {% for i in range(5 - review.rating) %}<i class="bi bi-star"></i>{% endfor %}
+          </div>
+
+          <p class="mt-2 mb-0" style="color:#555;line-height:1.6">{{ review.text }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center py-4" style="background:white;border-radius:12px">
+          <i class="bi bi-chat-dots" style="font-size:2.5rem;color:var(--muted)"></i>
+          <p class="mt-2 text-muted">No reviews yet. Be the first!</p>
+          <a href="{{ url_for('add_review', pid=product.id) }}" class="btn-rose mt-1 d-inline-block">
+            Write a Review
+          </a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Similar products sidebar -->
+    <div class="col-lg-4">
+      <h3 style="font-family:'Playfair Display',serif;margin-bottom:1.2rem">Similar Products</h3>
+      {% if similar %}
+        {% for sim_product, score in similar %}
+        <a href="{{ url_for('product_detail', pid=sim_product.id) }}" class="similar-card mb-3">
+          <img src="{{ sim_product.image_url or '' }}"
+               alt="{{ sim_product.name }}"
+               onerror="this.src='https://placehold.co/300x150/f0d6cf/c8705a?text=Beauty'">
+          <div class="info">
+            <div class="s-brand">{{ sim_product.brand }}</div>
+            <div class="s-name">{{ sim_product.name }}</div>
+            <div class="mt-1" style="font-size:.75rem;color:var(--muted)">
+              Similarity: {{ (score * 100)|round|int }}%
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      {% else %}
+        <p class="text-muted">No similar products found.</p>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
